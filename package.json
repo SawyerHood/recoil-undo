@@ -5,6 +5,12 @@
   "author": "SawyerHood",
   "license": "MIT",
   "repository": "SawyerHood/recoil-undo",
+  "keywords": [
+    "react",
+    "recoil",
+    "reactjs",
+    "undo"
+  ],
   "main": "dist/index.js",
   "module": "dist/index.modern.js",
   "source": "src/index.tsx",
