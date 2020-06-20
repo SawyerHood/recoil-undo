@@ -29,7 +29,7 @@ Make sure that you include you put `RecoilUndoRoot` under `RecoilRoot`. From the
 ```tsx
 import React from 'react';
 import { RecoilRoot, atom, useRecoilState } from 'recoil';
-import { RecoilUndoRoot, useUndo } from 'recoil-undo';
+import { RecoilUndoRoot, useUndo, useRedo } from 'recoil-undo';
 
 const COUNT = atom({
   default: 0,
@@ -49,6 +49,7 @@ const App = () => {
 function Counter() {
   const [count, setCount] = useRecoilState(COUNT);
   const undo = useUndo();
+  const redo = useRedo();
   return (
     <div>
       <div>
@@ -57,6 +58,7 @@ function Counter() {
         <button onClick={() => setCount((count) => count + 1)}>+</button>
       </div>
       <button onClick={undo}>Undo</button>
+      <button onClick={redo}>Redo</button>
     </div>
   );
 }

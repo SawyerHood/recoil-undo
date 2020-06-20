@@ -20,9 +20,13 @@ type History = {
 
 type ContextState = {
   undo: () => void;
+  redo: () => void;
 };
 
-const UndoContext = React.createContext<ContextState>({ undo: () => {} });
+const UndoContext = React.createContext<ContextState>({
+  undo: () => {},
+  redo: () => {},
+});
 
 type Props = {
   children?: React.ReactNode;
@@ -68,7 +72,24 @@ export const RecoilUndoRoot = React.memo(
       });
     }, [setHistory, gotoSnapshot]);
 
-    const value = useMemo(() => ({ undo }), [undo]);
+    const redo = useCallback(() => {
+      setHistory((history: History) => {
+        if (!history.future.length) {
+          return history;
+        }
+
+        isUndoingRef.current = true;
+        gotoSnapshot(history.future[0]);
+
+        return {
+          past: [...history.past, history.present],
+          present: history.future[0],
+          future: history.future.slice(1),
+        };
+      });
+    }, [setHistory, gotoSnapshot]);
+
+    const value = useMemo(() => ({ undo, redo }), [undo, redo]);
 
     return (
       <UndoContext.Provider value={value}>{children}</UndoContext.Provider>
@@ -79,4 +100,9 @@ export const RecoilUndoRoot = React.memo(
 export function useUndo(): () => void {
   const { undo } = useContext(UndoContext);
   return undo;
+}
+
+export function useRedo(): () => void {
+  const { redo } = useContext(UndoContext);
+  return redo;
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { RecoilRoot, atom, useRecoilState } from 'recoil';
-import { RecoilUndoRoot, useUndo } from 'recoil-undo';
+import { RecoilUndoRoot, useUndo, useRedo } from 'recoil-undo';
 
 const COUNT = atom({
   default: 0,
@@ -20,6 +20,7 @@ const App = () => {
 function Counter() {
   const [count, setCount] = useRecoilState(COUNT);
   const undo = useUndo();
+  const redo = useRedo();
   return (
     <div
       style={{
@@ -35,6 +36,7 @@ function Counter() {
         <Button onClick={() => setCount((count) => count + 1)}>+</Button>
       </div>
       <Button onClick={undo}>Undo</Button>
+      <Button onClick={redo}>Redo</Button>
     </div>
   );
 }
