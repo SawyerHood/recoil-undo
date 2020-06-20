@@ -8761,6 +8761,10 @@ realpath-native@^1.1.0:
   version "0.0.0"
   uid ""
 
+"recoil@link:../node_modules/recoil":
+  version "0.0.0"
+  uid ""
+
 recursive-readdir@2.2.2:
   version "2.2.2"
   resolved "https://registry.yarnpkg.com/recursive-readdir/-/recursive-readdir-2.2.2.tgz#9946fb3274e1628de6e36b2f6714953b4845094f"
