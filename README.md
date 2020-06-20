@@ -66,7 +66,6 @@ function Counter() {
 
 ## Roadmap
 
-- Redo
 - Undo filtering (only undo certain atoms)
 - Undo batching (batch multiple changes into a single history entry)
 - Undo scoping (keep multiple undo stacks in a single application)
