@@ -75,7 +75,7 @@ It is responsible for keeping track of the undo history from your `recoil` state
 `RecoilUndoRoot` the undo stack will only apply to the atoms provided, all other atoms will be ignored when undoing / redoing. Note: there is
 no reason to track selectors, as their values will be updated as the atoms change.
 
-If `trackedAtoms` is not passed to `RecoilUndoState` all atoms will be tracked by the `recoil-undo`.
+If `trackedAtoms` is not passed to `RecoilUndoState` all atoms will be tracked by `recoil-undo`.
 
 ### useUndo
 
