@@ -7,10 +7,15 @@ const COUNT = atom({
   key: 'count',
 });
 
+const TEXT = atom({
+  default: '',
+  key: 'text',
+});
+
 const App = () => {
   return (
     <RecoilRoot>
-      <RecoilUndoRoot>
+      <RecoilUndoRoot trackedAtoms={[COUNT]}>
         <Counter />
       </RecoilUndoRoot>
     </RecoilRoot>
@@ -37,6 +42,7 @@ function Counter() {
       </div>
       <Button onClick={undo}>Undo</Button>
       <Button onClick={redo}>Redo</Button>
+      <Input />
     </div>
   );
 }
@@ -50,6 +56,11 @@ function Button(props: { onClick: () => void; children: React.ReactNode }) {
       {props.children}
     </button>
   );
+}
+
+function Input() {
+  const [text, setText] = useRecoilState(TEXT);
+  return <input value={text} onChange={(e) => setText(e.target.value)} />;
 }
 
 export default App;
