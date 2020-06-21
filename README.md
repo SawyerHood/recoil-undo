@@ -25,6 +25,7 @@ yarn add recoil-undo
 ## Usage
 
 Make sure that you include you put `RecoilUndoRoot` under `RecoilRoot`. From there you can use the `useUndo` hook that will return a callback that will undo the last state change.
+The library is written in typescript and ts support work out of the box.
 
 ```tsx
 import React from 'react';
@@ -64,9 +65,28 @@ function Counter() {
 }
 ```
 
+## Api
+
+### RecoilUndoRoot
+
+This component is exported from `recoil-undo` and should be placed right under the `RecoilRoot` provider in the application.
+It is responsible for keeping track of the undo history from your `recoil` state. At the moment it takes a single optional property,
+`trackedAtoms` which is an array of `RecoilState` (the value that is returned from `atom` in `recoil`). If `trackedAtoms` is passed into
+`RecoilUndoRoot` the undo stack will only apply to the atoms provided, all other atoms will be ignored when undoing / redoing. Note: there is
+no reason to track selectors, as their values will be updated as the atoms change.
+
+If `trackedAtoms` is not passed to `RecoilUndoState` all atoms will be tracked by the `recoil-undo`.
+
+### useUndo
+
+This hook returns a function that when called will move all tracked atoms to the previous history state.
+
+### useRedo
+
+This hook returns a function that when called will move all tracked atoms to the next history state.
+
 ## Roadmap
 
-- Undo filtering (only undo certain atoms)
 - Undo batching (batch multiple changes into a single history entry)
 - Undo scoping (keep multiple undo stacks in a single application)
 
