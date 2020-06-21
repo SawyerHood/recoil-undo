@@ -168,7 +168,7 @@ function didAtomMapsChange(prev: AtomMap, curr: AtomMap): boolean {
     const prevVal = prev.get(key)!;
     const currVal = curr.get(key)!;
 
-    // I don't think that atoms can have non a loading state
+    // I'm pretty sure that atoms can't have a loading state
     if (prevVal.state !== currVal.state) {
       return true;
     }

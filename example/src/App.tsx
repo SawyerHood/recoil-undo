@@ -1,5 +1,11 @@
 import React from 'react';
-import { RecoilRoot, atom, useRecoilState } from 'recoil';
+import {
+  RecoilRoot,
+  atom,
+  useRecoilState,
+  selector,
+  useRecoilValue,
+} from 'recoil';
 import { RecoilUndoRoot, useUndo, useRedo } from 'recoil-undo';
 
 const COUNT = atom({
@@ -10,6 +16,11 @@ const COUNT = atom({
 const TEXT = atom({
   default: '',
   key: 'text',
+});
+
+const TWO_TIMES = selector({
+  get: ({ get }) => get(COUNT) * 2,
+  key: 'two_times',
 });
 
 const App = () => {
@@ -24,6 +35,7 @@ const App = () => {
 
 function Counter() {
   const [count, setCount] = useRecoilState(COUNT);
+  const double = useRecoilValue(TWO_TIMES);
   const undo = useUndo();
   const redo = useRedo();
   return (
@@ -43,6 +55,7 @@ function Counter() {
       <Button onClick={undo}>Undo</Button>
       <Button onClick={redo}>Redo</Button>
       <Input />
+      <div>{double}</div>
     </div>
   );
 }
