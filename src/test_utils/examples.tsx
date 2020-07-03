@@ -78,7 +78,7 @@ function Counter() {
 }
 
 export function renderCounter(props: Props = {}) {
-  const queries = render(<App />);
+  const queries = render(<App {...props} />);
   const inc = queries.getByTestId('inc');
   const dec = queries.getByTestId('dec');
   const count = queries.getByTestId('count');

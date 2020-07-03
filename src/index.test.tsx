@@ -75,7 +75,7 @@ describe('recoil-undo', () => {
     expect(getText()).toBe('yeet');
 
     undo();
-    expect(getText()).toBe('');
-    expect(getCount()).toBe(2);
+    expect(getText()).toBe('yeet');
+    expect(getCount()).toBe(3);
   });
 });
