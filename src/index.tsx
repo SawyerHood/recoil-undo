@@ -14,6 +14,8 @@ import {
   Loadable,
 } from 'recoil';
 
+// The core structure that keeps track of
+// the undo and redo stacks
 type History = {
   past: Snapshot[];
   present: Snapshot;
@@ -40,29 +42,40 @@ type Props = {
 export const RecoilUndoRoot = React.memo(
   ({ children, trackedAtoms }: Props): React.ReactElement => {
     const currentSnapshot = useRecoilSnapshot();
+
+    // For perf reasons we might want to move this into a ref.
     const [history, setHistory] = useState<History>({
       past: [],
       present: currentSnapshot,
       future: [],
     });
+
     const gotoSnapshot = useGotoRecoilSnapshot();
+
+    // Hack: while we are undoing, keep track of it so we don't record that as
+    // a part of hisory. This might not work with concurrent mode.
     const isUndoingRef = useRef<boolean>(false);
 
     useRecoilTransactionObserver_UNSTABLE(({ snapshot, previousSnapshot }) => {
+      // Assume that undo will only trigger a single transaction observer update
       if (isUndoingRef.current) {
         isUndoingRef.current = false;
         return;
       }
 
+      // If we are tracking atoms, make sure that the atoms we are tracking
+      // actually changed. If not, bail early
       if (trackedAtoms) {
         const prevMap = getAtomMap(previousSnapshot, trackedAtoms);
         const currMap = getAtomMap(snapshot, trackedAtoms);
         if (!didAtomMapsChange(prevMap, currMap)) {
+          // Make sure that we update the present snapshot
           setHistory({ ...history, present: snapshot });
           return;
         }
       }
 
+      // Add the previous snapshot to the past
       setHistory({
         past: [...history.past, previousSnapshot],
         present: snapshot,
@@ -127,6 +140,8 @@ export const RecoilUndoRoot = React.memo(
   },
 );
 
+// This function is used to apply the relevant atoms onto a target snapshot
+// (which is a future or a past snapshot). It leaves all non tracked atoms unchanged
 function mapTrackedAtomsOntoSnapshot(
   current: Snapshot,
   target: Snapshot,
@@ -155,6 +170,9 @@ function getAtomMap(snap: Snapshot, trackedAtoms: RecoilState<any>[]): AtomMap {
   return atomMap;
 }
 
+// Compare two atom map and check if any of the values have changed
+// (via a === comparison). Useful to see if a new history entry
+// should be added to the stack or not.
 function didAtomMapsChange(prev: AtomMap, curr: AtomMap): boolean {
   if (prev.size !== curr.size) {
     return true;
