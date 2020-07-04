@@ -27,11 +27,15 @@ type AtomMap = Map<RecoilState<any>, Loadable<any>>;
 type ContextState = {
   undo: () => void;
   redo: () => void;
+  startBatch: () => void;
+  endBatch: () => void;
 };
 
 const UndoContext = React.createContext<ContextState>({
   undo: () => {},
   redo: () => {},
+  startBatch: () => {},
+  endBatch: () => {},
 });
 
 type Props = {
@@ -56,10 +60,17 @@ export const RecoilUndoRoot = React.memo(
     // a part of hisory. This might not work with concurrent mode.
     const isUndoingRef = useRef<boolean>(false);
 
+    const isBatchingRef = useRef<boolean>(false);
+
     useRecoilTransactionObserver_UNSTABLE(({ snapshot, previousSnapshot }) => {
       // Assume that undo will only trigger a single transaction observer update
       if (isUndoingRef.current) {
         isUndoingRef.current = false;
+        return;
+      }
+
+      if (isBatchingRef.current) {
+        setHistory({ ...history, present: snapshot });
         return;
       }
 
@@ -132,7 +143,23 @@ export const RecoilUndoRoot = React.memo(
       });
     }, [setHistory, gotoSnapshot, trackedAtoms]);
 
-    const value = useMemo(() => ({ undo, redo }), [undo, redo]);
+    const startBatch = useCallback(() => {
+      isBatchingRef.current = true;
+      setHistory((history) => {
+        return { ...history, past: [...history.past, history.present] };
+      });
+    }, [isBatchingRef, setHistory]);
+
+    const endBatch = useCallback(() => {
+      isBatchingRef.current = false;
+    }, [isBatchingRef]);
+
+    const value = useMemo(() => ({ undo, redo, startBatch, endBatch }), [
+      undo,
+      redo,
+      startBatch,
+      endBatch,
+    ]);
 
     return (
       <UndoContext.Provider value={value}>{children}</UndoContext.Provider>
@@ -211,4 +238,16 @@ export function useUndo(): () => void {
 export function useRedo(): () => void {
   const { redo } = useContext(UndoContext);
   return redo;
+}
+
+export function useBatching(): {
+  startBatch: () => void;
+  endBatch: () => void;
+} {
+  const { startBatch, endBatch } = useContext(UndoContext);
+  const value = useMemo(() => ({ startBatch, endBatch }), [
+    startBatch,
+    endBatch,
+  ]);
+  return value;
 }

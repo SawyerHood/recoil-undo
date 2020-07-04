@@ -6,7 +6,7 @@ import {
   selector,
   useRecoilValue,
 } from 'recoil';
-import { RecoilUndoRoot, useUndo, useRedo } from 'recoil-undo';
+import { RecoilUndoRoot, useUndo, useRedo, useBatching } from 'recoil-undo';
 
 const COUNT = atom({
   default: 0,
@@ -38,6 +38,7 @@ function Counter() {
   const double = useRecoilValue(TWO_TIMES);
   const undo = useUndo();
   const redo = useRedo();
+  const { startBatch, endBatch } = useBatching();
   return (
     <div
       style={{
@@ -56,6 +57,8 @@ function Counter() {
       <Button onClick={redo}>Redo</Button>
       <Input />
       <div>{double}</div>
+      <Button onClick={startBatch}>Start Batch</Button>
+      <Button onClick={endBatch}>End Batch</Button>
     </div>
   );
 }
