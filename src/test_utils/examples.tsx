@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
-import { useUndo, useRedo, RecoilUndoRoot } from '../index';
+import { useUndo, useRedo, RecoilUndoRoot, useBatching } from '../index';
 import {
   RecoilRoot,
   atom,
@@ -44,6 +44,7 @@ function Counter() {
   const [text, setText] = useRecoilState(TEXT);
   const undo = useUndo();
   const redo = useRedo();
+  const { startBatch, endBatch } = useBatching();
   return (
     <div>
       <div>
@@ -73,6 +74,12 @@ function Counter() {
         value={text}
         onChange={(e) => setText(e.target.value)}
       />
+      <button data-testid='startBatch' onClick={startBatch}>
+        Start Batch
+      </button>
+      <button data-testid='endBatch' onClick={endBatch}>
+        End Batch
+      </button>
     </div>
   );
 }
@@ -86,6 +93,8 @@ export function renderCounter(props: Props = {}) {
   const redoButton = queries.getByTestId('redo');
   const countx2 = queries.getByTestId('countx2');
   const text = queries.getByTestId('text') as HTMLInputElement;
+  const startBatchButton = queries.getByTestId('startBatch');
+  const endBatchButton = queries.getByTestId('endBatch');
 
   const plus = () => fireEvent.click(inc);
   const minus = () => fireEvent.click(dec);
@@ -96,6 +105,8 @@ export function renderCounter(props: Props = {}) {
   const getText = () => text.value;
   const typeText = (value: string) =>
     fireEvent.change(text, { target: { value } });
+  const startBatch = () => fireEvent.click(startBatchButton);
+  const endBatch = () => fireEvent.click(endBatchButton);
 
   return {
     plus,
@@ -106,6 +117,8 @@ export function renderCounter(props: Props = {}) {
     getCountx2,
     getText,
     typeText,
+    startBatch,
+    endBatch,
     queries,
   };
 }

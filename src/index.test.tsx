@@ -78,4 +78,36 @@ describe('recoil-undo', () => {
     expect(getText()).toBe('yeet');
     expect(getCount()).toBe(3);
   });
+
+  it('handles batching atom changes', () => {
+    const {
+      plus,
+      minus,
+      redo,
+      undo,
+      getCount,
+      startBatch,
+      endBatch,
+    } = renderCounter();
+    plus();
+    expect(getCount()).toBe(1);
+
+    startBatch();
+    plus();
+    plus();
+    plus();
+    minus();
+    plus();
+    expect(getCount()).toBe(4);
+    endBatch();
+    minus();
+
+    expect(getCount()).toBe(3);
+    undo();
+    expect(getCount()).toBe(4);
+    undo();
+    expect(getCount()).toBe(1);
+    undo();
+    expect(getCount()).toBe(0);
+  });
 });
