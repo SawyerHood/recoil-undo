@@ -85,9 +85,30 @@ This hook returns a function that when called will move all tracked atoms to the
 
 This hook returns a function that when called will move all tracked atoms to the next history state.
 
+### useBatching
+
+This hook returns an object with two properties `startBatch` and `endBatch`. There are many situations where you might want to turn mutliple user interactions into a single item in the undo stack.
+Example: suppose a user is dragging an object across the screen, you don't want to record every mouse move as an undoable operation. Instead, you only want to record the start and end position on the undo stack.
+In cases like these, you can call `startBatch` and `endBatch` to make sure multiple atom updates only add a single item to the undo stack.
+
+```js
+const { startBatch, endBatch } = useBatching();
+
+const onMouseDown = () => {
+  startBatch();
+};
+
+const onMouseMove = () => {
+  // Update item position
+};
+
+const onMouseUp = () => {
+  endBatch();
+};
+```
+
 ## Roadmap
 
-- Undo batching (batch multiple changes into a single history entry)
 - Undo scoping (keep multiple undo stacks in a single application)
 
 ## License
