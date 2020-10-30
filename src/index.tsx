@@ -29,6 +29,10 @@ type ContextState = {
   redo: () => void;
   startBatch: () => void;
   endBatch: () => void;
+  startUsingHistory: () => void;
+  stopUsingHistory: () => void;
+  getTotalPast: () => void;
+  getTotalFuture: () => void;
 };
 
 const UndoContext = React.createContext<ContextState>({
@@ -36,15 +40,24 @@ const UndoContext = React.createContext<ContextState>({
   redo: () => {},
   startBatch: () => {},
   endBatch: () => {},
+  startUsingHistory: () => {},
+  stopUsingHistory: () => {},
+  getTotalPast: () => {},
+  getTotalFuture: () => {},
 });
 
 type Props = {
   children?: React.ReactNode;
   trackedAtoms?: RecoilState<any>[];
+  manualHistory?: boolean;
 };
 
 export const RecoilUndoRoot = React.memo(
-  ({ children, trackedAtoms }: Props): React.ReactElement => {
+  ({
+    children,
+    trackedAtoms,
+    manualHistory = false,
+  }: Props): React.ReactElement => {
     const currentSnapshot = useRecoilSnapshot();
 
     // For perf reasons we might want to move this into a ref.
@@ -56,8 +69,10 @@ export const RecoilUndoRoot = React.memo(
 
     const gotoSnapshot = useGotoRecoilSnapshot();
 
+    const isUsingHistory = useRef<boolean>(manualHistory !== true);
+
     // Hack: while we are undoing, keep track of it so we don't record that as
-    // a part of hisory. This might not work with concurrent mode.
+    // a part of history. This might not work with concurrent mode.
     const isUndoingRef = useRef<boolean>(false);
 
     const isBatchingRef = useRef<boolean>(false);
@@ -66,6 +81,10 @@ export const RecoilUndoRoot = React.memo(
       // Assume that undo will only trigger a single transaction observer update
       if (isUndoingRef.current) {
         isUndoingRef.current = false;
+        return;
+      }
+
+      if (!isUsingHistory) {
         return;
       }
 
@@ -154,12 +173,40 @@ export const RecoilUndoRoot = React.memo(
       isBatchingRef.current = false;
     }, [isBatchingRef]);
 
-    const value = useMemo(() => ({ undo, redo, startBatch, endBatch }), [
-      undo,
-      redo,
-      startBatch,
-      endBatch,
-    ]);
+    const startUsingHistory = useCallback(() => {
+      if (!manualHistory) {
+        return;
+      }
+      isUsingHistory.current = true;
+    }, [manualHistory]);
+
+    const stopUsingHistory = useCallback(() => {
+      if (!manualHistory) {
+        return;
+      }
+      isUsingHistory.current = false;
+    }, [manualHistory]);
+
+    const getTotalPast = () => {
+      return history.past.length;
+    };
+    const getTotalFuture = () => {
+      return history.future.length;
+    };
+
+    const value = useMemo(
+      () => ({
+        undo,
+        redo,
+        startBatch,
+        endBatch,
+        startUsingHistory,
+        stopUsingHistory,
+        getTotalPast,
+        getTotalFuture,
+      }),
+      [undo, redo, startBatch, endBatch, startUsingHistory, stopUsingHistory],
+    );
 
     return (
       <UndoContext.Provider value={value}>{children}</UndoContext.Provider>
@@ -230,6 +277,16 @@ function didAtomMapsChange(prev: AtomMap, curr: AtomMap): boolean {
   return false;
 }
 
+export function useUndoHistory() {
+  const {
+    startUsingHistory,
+    stopUsingHistory,
+    getTotalPast,
+    getTotalFuture,
+  } = useContext(UndoContext);
+  return { startUsingHistory, stopUsingHistory, getTotalPast, getTotalFuture };
+}
+
 export function useUndo(): () => void {
   const { undo } = useContext(UndoContext);
   return undo;
@@ -245,9 +302,5 @@ export function useBatching(): {
   endBatch: () => void;
 } {
   const { startBatch, endBatch } = useContext(UndoContext);
-  const value = useMemo(() => ({ startBatch, endBatch }), [
-    startBatch,
-    endBatch,
-  ]);
-  return value;
+  return useMemo(() => ({ startBatch, endBatch }), [startBatch, endBatch]);
 }
