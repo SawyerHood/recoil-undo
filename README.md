@@ -109,18 +109,18 @@ const onMouseUp = () => {
 
 ### useRecoilHistory
 
-This hook returns object with `startHistorySaving()`, `stopHistorySaving()`, `getTotalPast()` and `getTotalFuture()` functions.
+This hook returns object with `startTrackingHistory()`, `stopTrackingHistory()`, `getIsTrackingHistory()`, `getTotalPast()` and `getTotalFuture()` functions.
 
 ````js
 
 const undo = useUndo();
-const {startHistorySaving, stopHistorySaving, getTotalPast, getTotalFuture} = useRecoilHistory();
+const {startTrackingHistory, stopTrackingHistory, getTotalPast, getTotalFuture, getIsTrackingHistory} = useRecoilHistory();
 
 // default value = 23
 const [value, setValue] = useRecoilState(valueAtom);
-startHistorySaving();
+startTrackingHistory();
 setValue({value: 1});
-stopHistorySaving();
+stopTrackingHistory();
 
 // getTotalPast() === 1
 

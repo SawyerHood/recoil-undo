@@ -54,8 +54,8 @@ function Counter() {
   const redo = useRedo();
   const { startBatch, endBatch } = useBatching();
   const {
-    startSavingHistory,
-    stopSavingHistory,
+    startTrackingHistory,
+    stopTrackingHistory,
     getTotalPast,
     getTotalFuture,
   } = useRecoilHistory();
@@ -95,10 +95,10 @@ function Counter() {
       <button data-testid='endBatch' onClick={endBatch}>
         End Batch
       </button>
-      <button data-testid='startSavingHistory' onClick={startSavingHistory}>
+      <button data-testid='startTrackingHistory' onClick={startTrackingHistory}>
         Start using history
       </button>
-      <button data-testid='stopSavingHistory' onClick={stopSavingHistory}>
+      <button data-testid='stopTrackingHistory' onClick={stopTrackingHistory}>
         Stop using history
       </button>
       <div data-testid='totalPastValue'>{getTotalPast()}</div>
@@ -118,8 +118,10 @@ export function renderCounter(props: Props = {}) {
   const text = queries.getByTestId('text') as HTMLInputElement;
   const startBatchButton = queries.getByTestId('startBatch');
   const endBatchButton = queries.getByTestId('endBatch');
-  const startSavingHistoryButton = queries.getByTestId('startSavingHistory');
-  const stopSavingHistoryButton = queries.getByTestId('stopSavingHistory');
+  const startTrackingHistoryButton = queries.getByTestId(
+    'startTrackingHistory',
+  );
+  const stopTrackingHistoryButton = queries.getByTestId('stopTrackingHistory');
   const getTotalPastValue = queries.getByTestId('totalPastValue');
   const getTotalFutureValue = queries.getByTestId('totalFutureValue');
 
@@ -134,8 +136,9 @@ export function renderCounter(props: Props = {}) {
     fireEvent.change(text, { target: { value } });
   const startBatch = () => fireEvent.click(startBatchButton);
   const endBatch = () => fireEvent.click(endBatchButton);
-  const startSavingHistory = () => fireEvent.click(startSavingHistoryButton);
-  const stopSavingHistory = () => fireEvent.click(stopSavingHistoryButton);
+  const startTrackingHistory = () =>
+    fireEvent.click(startTrackingHistoryButton);
+  const stopTrackingHistory = () => fireEvent.click(stopTrackingHistoryButton);
   const getTotalPast = () => Number(getTotalPastValue.textContent);
   const getTotalFuture = () => Number(getTotalFutureValue.textContent);
 
@@ -151,8 +154,8 @@ export function renderCounter(props: Props = {}) {
     startBatch,
     endBatch,
     queries,
-    startSavingHistory,
-    stopSavingHistory,
+    startTrackingHistory,
+    stopTrackingHistory,
     getTotalPast,
     getTotalFuture,
   };

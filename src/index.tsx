@@ -29,8 +29,9 @@ type ContextState = {
   redo: () => void;
   startBatch: () => void;
   endBatch: () => void;
-  startSavingHistory: () => void;
-  stopSavingHistory: () => void;
+  getIsTrackingHistory: () => boolean;
+  startTrackingHistory: () => void;
+  stopTrackingHistory: () => void;
   getTotalPast: () => number;
   getTotalFuture: () => number;
 };
@@ -40,8 +41,9 @@ const UndoContext = React.createContext<ContextState>({
   redo: () => {},
   startBatch: () => {},
   endBatch: () => {},
-  startSavingHistory: () => {},
-  stopSavingHistory: () => {},
+  getIsTrackingHistory: () => true,
+  startTrackingHistory: () => {},
+  stopTrackingHistory: () => {},
   getTotalPast: () => 0,
   getTotalFuture: () => 0,
 });
@@ -172,14 +174,18 @@ export const RecoilUndoRoot = React.memo(
       isBatchingRef.current = false;
     }, [isBatchingRef]);
 
-    const startSavingHistory = useCallback(() => {
+    const getIsTrackingHistory = useCallback((): boolean => {
+      return isUsingHistory.current;
+    }, [manualHistory, isUsingHistory.current]);
+
+    const startTrackingHistory = useCallback(() => {
       if (!manualHistory) {
         return;
       }
       isUsingHistory.current = true;
     }, [manualHistory]);
 
-    const stopSavingHistory = useCallback(() => {
+    const stopTrackingHistory = useCallback(() => {
       if (!manualHistory) {
         return;
       }
@@ -198,8 +204,9 @@ export const RecoilUndoRoot = React.memo(
       redo,
       startBatch,
       endBatch,
-      startSavingHistory,
-      stopSavingHistory,
+      getIsTrackingHistory,
+      startTrackingHistory,
+      stopTrackingHistory,
       getTotalPast,
       getTotalFuture,
     };
@@ -275,14 +282,16 @@ function didAtomMapsChange(prev: AtomMap, curr: AtomMap): boolean {
 
 export function useRecoilHistory() {
   const {
-    startSavingHistory,
-    stopSavingHistory,
+    getIsTrackingHistory,
+    startTrackingHistory,
+    stopTrackingHistory,
     getTotalPast,
     getTotalFuture,
   } = useContext(UndoContext);
   return {
-    startSavingHistory,
-    stopSavingHistory,
+    getIsTrackingHistory,
+    startTrackingHistory,
+    stopTrackingHistory,
     getTotalPast,
     getTotalFuture,
   };

@@ -152,18 +152,18 @@ describe('recoil-undo', () => {
       getCount,
       getTotalPast,
       getTotalFuture,
-      startSavingHistory,
-      stopSavingHistory,
+      startTrackingHistory,
+      stopTrackingHistory,
     } = renderCounter({ manualHistory: true });
 
     expect(getTotalPast()).toBe(0);
     expect(getTotalFuture()).toBe(0);
-    startSavingHistory();
+    startTrackingHistory();
     plus();
     expect(getCount()).toBe(1);
     expect(getTotalPast()).toBe(1);
     expect(getTotalFuture()).toBe(0);
-    stopSavingHistory();
+    stopTrackingHistory();
 
     plus();
     plus();
@@ -177,13 +177,13 @@ describe('recoil-undo', () => {
     expect(getTotalPast()).toBe(0);
     expect(getTotalFuture()).toBe(1);
 
-    startSavingHistory();
+    startTrackingHistory();
     plus();
     plus();
     plus();
     expect(getCount()).toBe(3);
     expect(getTotalPast()).toBe(2);
     expect(getTotalFuture()).toBe(0);
-    stopSavingHistory();
+    stopTrackingHistory();
   });
 });
