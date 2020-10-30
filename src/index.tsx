@@ -33,7 +33,6 @@ type ContextState = {
   stopSavingHistory: () => void;
   getTotalPast: () => number;
   getTotalFuture: () => number;
-  getHistoryObject: () => any;
 };
 
 const UndoContext = React.createContext<ContextState>({
@@ -45,7 +44,6 @@ const UndoContext = React.createContext<ContextState>({
   stopSavingHistory: () => {},
   getTotalPast: () => 0,
   getTotalFuture: () => 0,
-  getHistoryObject: () => {},
 });
 
 type Props = {
@@ -195,8 +193,6 @@ export const RecoilUndoRoot = React.memo(
       return history.future.length;
     };
 
-    const getHistoryObject = () => history;
-
     const value = {
       undo,
       redo,
@@ -206,7 +202,6 @@ export const RecoilUndoRoot = React.memo(
       stopSavingHistory,
       getTotalPast,
       getTotalFuture,
-      getHistoryObject,
     };
 
     return (
@@ -284,14 +279,12 @@ export function useRecoilHistory() {
     stopSavingHistory,
     getTotalPast,
     getTotalFuture,
-    getHistoryObject,
   } = useContext(UndoContext);
   return {
     startSavingHistory,
     stopSavingHistory,
     getTotalPast,
     getTotalFuture,
-    getHistoryObject,
   };
 }
 
