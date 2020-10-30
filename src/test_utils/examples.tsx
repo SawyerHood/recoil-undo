@@ -1,7 +1,13 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
-import { useUndo, useRedo, RecoilUndoRoot, useBatching } from '../index';
+import {
+  useUndo,
+  useRedo,
+  RecoilUndoRoot,
+  useBatching,
+  useRecoilHistory,
+} from '../index';
 import {
   RecoilRoot,
   atom,
@@ -26,8 +32,10 @@ const TEXT = atom({
   key: 'text',
 });
 
-type Props = { trackedAtoms?: RecoilState<any>[] };
-
+type Props = {
+  trackedAtoms?: RecoilState<any>[];
+  manualHistory?: boolean;
+};
 const App = (props: Props) => {
   return (
     <RecoilRoot>
@@ -45,6 +53,13 @@ function Counter() {
   const undo = useUndo();
   const redo = useRedo();
   const { startBatch, endBatch } = useBatching();
+  const {
+    startSavingHistory,
+    stopSavingHistory,
+    getTotalPast,
+    getTotalFuture,
+  } = useRecoilHistory();
+
   return (
     <div>
       <div>
@@ -80,6 +95,14 @@ function Counter() {
       <button data-testid='endBatch' onClick={endBatch}>
         End Batch
       </button>
+      <button data-testid='startSavingHistory' onClick={startSavingHistory}>
+        Start using history
+      </button>
+      <button data-testid='stopSavingHistory' onClick={stopSavingHistory}>
+        Stop using history
+      </button>
+      <div data-testid='totalPastValue'>{getTotalPast()}</div>
+      <div data-testid='totalFutureValue'>{getTotalFuture()}</div>
     </div>
   );
 }
@@ -95,6 +118,10 @@ export function renderCounter(props: Props = {}) {
   const text = queries.getByTestId('text') as HTMLInputElement;
   const startBatchButton = queries.getByTestId('startBatch');
   const endBatchButton = queries.getByTestId('endBatch');
+  const startSavingHistoryButton = queries.getByTestId('startSavingHistory');
+  const stopSavingHistoryButton = queries.getByTestId('stopSavingHistory');
+  const getTotalPastValue = queries.getByTestId('totalPastValue');
+  const getTotalFutureValue = queries.getByTestId('totalFutureValue');
 
   const plus = () => fireEvent.click(inc);
   const minus = () => fireEvent.click(dec);
@@ -107,6 +134,10 @@ export function renderCounter(props: Props = {}) {
     fireEvent.change(text, { target: { value } });
   const startBatch = () => fireEvent.click(startBatchButton);
   const endBatch = () => fireEvent.click(endBatchButton);
+  const startSavingHistory = () => fireEvent.click(startSavingHistoryButton);
+  const stopSavingHistory = () => fireEvent.click(stopSavingHistoryButton);
+  const getTotalPast = () => Number(getTotalPastValue.textContent);
+  const getTotalFuture = () => Number(getTotalFutureValue.textContent);
 
   return {
     plus,
@@ -120,5 +151,9 @@ export function renderCounter(props: Props = {}) {
     startBatch,
     endBatch,
     queries,
+    startSavingHistory,
+    stopSavingHistory,
+    getTotalPast,
+    getTotalFuture,
   };
 }

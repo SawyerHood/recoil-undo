@@ -29,10 +29,11 @@ type ContextState = {
   redo: () => void;
   startBatch: () => void;
   endBatch: () => void;
-  startUsingHistory: () => void;
-  stopUsingHistory: () => void;
-  getTotalPast: () => void;
-  getTotalFuture: () => void;
+  startSavingHistory: () => void;
+  stopSavingHistory: () => void;
+  getTotalPast: () => number;
+  getTotalFuture: () => number;
+  getHistoryObject: () => any;
 };
 
 const UndoContext = React.createContext<ContextState>({
@@ -40,10 +41,11 @@ const UndoContext = React.createContext<ContextState>({
   redo: () => {},
   startBatch: () => {},
   endBatch: () => {},
-  startUsingHistory: () => {},
-  stopUsingHistory: () => {},
-  getTotalPast: () => {},
-  getTotalFuture: () => {},
+  startSavingHistory: () => {},
+  stopSavingHistory: () => {},
+  getTotalPast: () => 0,
+  getTotalFuture: () => 0,
+  getHistoryObject: () => {},
 });
 
 type Props = {
@@ -84,10 +86,9 @@ export const RecoilUndoRoot = React.memo(
         return;
       }
 
-      if (!isUsingHistory) {
+      if (isUsingHistory.current === false) {
         return;
       }
-
       if (isBatchingRef.current) {
         setHistory({ ...history, present: snapshot });
         return;
@@ -173,14 +174,14 @@ export const RecoilUndoRoot = React.memo(
       isBatchingRef.current = false;
     }, [isBatchingRef]);
 
-    const startUsingHistory = useCallback(() => {
+    const startSavingHistory = useCallback(() => {
       if (!manualHistory) {
         return;
       }
       isUsingHistory.current = true;
     }, [manualHistory]);
 
-    const stopUsingHistory = useCallback(() => {
+    const stopSavingHistory = useCallback(() => {
       if (!manualHistory) {
         return;
       }
@@ -194,19 +195,19 @@ export const RecoilUndoRoot = React.memo(
       return history.future.length;
     };
 
-    const value = useMemo(
-      () => ({
-        undo,
-        redo,
-        startBatch,
-        endBatch,
-        startUsingHistory,
-        stopUsingHistory,
-        getTotalPast,
-        getTotalFuture,
-      }),
-      [undo, redo, startBatch, endBatch, startUsingHistory, stopUsingHistory],
-    );
+    const getHistoryObject = () => history;
+
+    const value = {
+      undo,
+      redo,
+      startBatch,
+      endBatch,
+      startSavingHistory,
+      stopSavingHistory,
+      getTotalPast,
+      getTotalFuture,
+      getHistoryObject,
+    };
 
     return (
       <UndoContext.Provider value={value}>{children}</UndoContext.Provider>
@@ -277,14 +278,21 @@ function didAtomMapsChange(prev: AtomMap, curr: AtomMap): boolean {
   return false;
 }
 
-export function useUndoHistory() {
+export function useRecoilHistory() {
   const {
-    startUsingHistory,
-    stopUsingHistory,
+    startSavingHistory,
+    stopSavingHistory,
     getTotalPast,
     getTotalFuture,
+    getHistoryObject,
   } = useContext(UndoContext);
-  return { startUsingHistory, stopUsingHistory, getTotalPast, getTotalFuture };
+  return {
+    startSavingHistory,
+    stopSavingHistory,
+    getTotalPast,
+    getTotalFuture,
+    getHistoryObject,
+  };
 }
 
 export function useUndo(): () => void {
