@@ -107,6 +107,32 @@ const onMouseUp = () => {
 };
 ```
 
+### useRecoilHistory
+
+This hook returns object with `startHistorySaving()`, `stopHistorySaving()`, `getTotalPast()` and `getTotalFuture()` functions.
+
+````js
+
+const undo = useUndo();
+const {startHistorySaving, stopHistorySaving, getTotalPast, getTotalFuture} = useRecoilHistory();
+
+// default value = 23
+const [value, setValue] = useRecoilState(valueAtom);
+startHistorySaving();
+setValue({value: 1});
+stopHistorySaving();
+
+// getTotalPast() === 1
+
+setRecoilValue({value: 55});
+// getTotalPast() === 1
+undo();
+// getTotalPast() === 0
+// getTotalFuture() === 1
+// value === 23
+
+````
+
 ## Roadmap
 
 - Undo scoping (keep multiple undo stacks in a single application)
