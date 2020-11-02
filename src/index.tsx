@@ -29,6 +29,8 @@ type ContextState = {
   redo: () => void;
   startBatch: () => void;
   endBatch: () => void;
+  setIsTrackingHistory: (value: boolean) => void;
+  getIsTrackingHistory: () => boolean;
 };
 
 const UndoContext = React.createContext<ContextState>({
@@ -36,15 +38,22 @@ const UndoContext = React.createContext<ContextState>({
   redo: () => {},
   startBatch: () => {},
   endBatch: () => {},
+  setIsTrackingHistory: () => {},
+  getIsTrackingHistory: () => false,
 });
 
 type Props = {
   children?: React.ReactNode;
   trackedAtoms?: RecoilState<any>[];
+  trackingByDefault?: boolean;
 };
 
 export const RecoilUndoRoot = React.memo(
-  ({ children, trackedAtoms }: Props): React.ReactElement => {
+  ({
+    children,
+    trackedAtoms,
+    trackingByDefault = true,
+  }: Props): React.ReactElement => {
     const currentSnapshot = useRecoilSnapshot();
 
     // For perf reasons we might want to move this into a ref.
@@ -56,8 +65,10 @@ export const RecoilUndoRoot = React.memo(
 
     const gotoSnapshot = useGotoRecoilSnapshot();
 
+    const isTrackingHistory = useRef<boolean>(trackingByDefault);
+
     // Hack: while we are undoing, keep track of it so we don't record that as
-    // a part of hisory. This might not work with concurrent mode.
+    // a part of history. This might not work with concurrent mode.
     const isUndoingRef = useRef<boolean>(false);
 
     const isBatchingRef = useRef<boolean>(false);
@@ -66,6 +77,10 @@ export const RecoilUndoRoot = React.memo(
       // Assume that undo will only trigger a single transaction observer update
       if (isUndoingRef.current) {
         isUndoingRef.current = false;
+        return;
+      }
+
+      if (!isTrackingHistory.current) {
         return;
       }
 
@@ -154,12 +169,25 @@ export const RecoilUndoRoot = React.memo(
       isBatchingRef.current = false;
     }, [isBatchingRef]);
 
-    const value = useMemo(() => ({ undo, redo, startBatch, endBatch }), [
-      undo,
-      redo,
-      startBatch,
-      endBatch,
-    ]);
+    const setIsTrackingHistory = (val: boolean) => {
+      isTrackingHistory.current = val;
+    };
+
+    const getIsTrackingHistory = () => {
+      return isTrackingHistory.current;
+    };
+
+    const value = useMemo(
+      () => ({
+        undo,
+        redo,
+        startBatch,
+        endBatch,
+        setIsTrackingHistory,
+        getIsTrackingHistory,
+      }),
+      [undo, redo, startBatch, endBatch],
+    );
 
     return (
       <UndoContext.Provider value={value}>{children}</UndoContext.Provider>
@@ -250,4 +278,14 @@ export function useBatching(): {
     endBatch,
   ]);
   return value;
+}
+
+export function useIsTrackingHistory() {
+  const { setIsTrackingHistory, getIsTrackingHistory } = useContext(
+    UndoContext,
+  );
+  return {
+    setIsTrackingHistory,
+    getIsTrackingHistory,
+  };
 }
