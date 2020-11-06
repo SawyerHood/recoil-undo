@@ -1,6 +1,6 @@
 {
   "name": "recoil-undo",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Undo functionality for the recoil state management library",
   "author": "SawyerHood",
   "license": "MIT",
