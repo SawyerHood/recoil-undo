@@ -70,10 +70,11 @@ function Counter() {
 ### RecoilUndoRoot
 
 This component is exported from `recoil-undo` and should be placed right under the `RecoilRoot` provider in the application.
-It is responsible for keeping track of the undo history from your `recoil` state. At the moment it takes a single optional property,
-`trackedAtoms` which is an array of `RecoilState` (the value that is returned from `atom` in `recoil`). If `trackedAtoms` is passed into
+It is responsible for keeping track of the undo history from your `recoil` state. At the moment it takes a few optional properties:
+* `trackedAtoms` which is an array of `RecoilState` (the value that is returned from `atom` in `recoil`). If `trackedAtoms` is passed into
 `RecoilUndoRoot` the undo stack will only apply to the atoms provided, all other atoms will be ignored when undoing / redoing. Note: there is
 no reason to track selectors, as their values will be updated as the atoms change.
+* `trackingByDefault` which is a boolean value (default is true) where you can skip history tracking if required
 
 If `trackedAtoms` is not passed to `RecoilUndoState` all atoms will be tracked by `recoil-undo`.
 
@@ -105,6 +106,18 @@ const onMouseMove = () => {
 const onMouseUp = () => {
   endBatch();
 };
+```
+
+### useIsTrackingHistory
+This will start / stop tracking history if required.
+
+```js
+const {getIsTrackingHistory, setIsTrackingHistory} = useIsTrackingHistory();
+
+// getIsTrackingHistory() === false
+setIsTrackingHistory(true);
+// ... after a re-render
+// getIsTrackingHistory() === true
 ```
 
 ## Roadmap
