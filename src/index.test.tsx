@@ -83,7 +83,6 @@ describe('recoil-undo', () => {
     const {
       plus,
       minus,
-      redo,
       undo,
       getCount,
       startBatch,
@@ -109,5 +108,33 @@ describe('recoil-undo', () => {
     expect(getCount()).toBe(1);
     undo();
     expect(getCount()).toBe(0);
+  });
+
+  it('tracking of changes can be disabled', () => {
+    const {
+      plus,
+      minus,
+      undo,
+      getCount,
+      startTracking,
+      stopTracking,
+    } = renderCounter({ trackingByDefault: false });
+    plus();
+    plus();
+    undo();
+    expect(getCount()).toBe(2);
+    startTracking();
+    plus();
+    expect(getCount()).toBe(3);
+    undo();
+    expect(getCount()).toBe(2);
+    undo();
+    expect(getCount()).toBe(2);
+    minus();
+    stopTracking();
+    minus();
+    expect(getCount()).toBe(0);
+    undo();
+    expect(getCount()).toBe(2);
   });
 });

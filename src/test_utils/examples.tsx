@@ -1,14 +1,19 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
-import { useUndo, useRedo, RecoilUndoRoot, useBatching } from '../index';
+import {
+  useUndo,
+  useRedo,
+  RecoilUndoRoot,
+  useBatching,
+  useIsTrackingHistory,
+} from '../index';
 import {
   RecoilRoot,
   atom,
   selector,
   useRecoilState,
   useRecoilValue,
-  RecoilState,
 } from 'recoil';
 
 export const COUNT = atom({
@@ -26,7 +31,7 @@ const TEXT = atom({
   key: 'text',
 });
 
-type Props = { trackedAtoms?: RecoilState<any>[] };
+type Props = React.ComponentProps<typeof RecoilUndoRoot>;
 
 const App = (props: Props) => {
   return (
@@ -45,6 +50,7 @@ function Counter() {
   const undo = useUndo();
   const redo = useRedo();
   const { startBatch, endBatch } = useBatching();
+  const { setIsTrackingHistory } = useIsTrackingHistory();
   return (
     <div>
       <div>
@@ -80,6 +86,18 @@ function Counter() {
       <button data-testid='endBatch' onClick={endBatch}>
         End Batch
       </button>
+      <button
+        data-testid='startTracking'
+        onClick={() => setIsTrackingHistory(true)}
+      >
+        Start Tracking
+      </button>
+      <button
+        data-testid='stopTracking'
+        onClick={() => setIsTrackingHistory(false)}
+      >
+        End Tracking
+      </button>
     </div>
   );
 }
@@ -95,6 +113,8 @@ export function renderCounter(props: Props = {}) {
   const text = queries.getByTestId('text') as HTMLInputElement;
   const startBatchButton = queries.getByTestId('startBatch');
   const endBatchButton = queries.getByTestId('endBatch');
+  const startTrackingButton = queries.getByTestId('startTracking');
+  const stopTrackingButton = queries.getByTestId('stopTracking');
 
   const plus = () => fireEvent.click(inc);
   const minus = () => fireEvent.click(dec);
@@ -107,6 +127,8 @@ export function renderCounter(props: Props = {}) {
     fireEvent.change(text, { target: { value } });
   const startBatch = () => fireEvent.click(startBatchButton);
   const endBatch = () => fireEvent.click(endBatchButton);
+  const startTracking = () => fireEvent.click(startTrackingButton);
+  const stopTracking = () => fireEvent.click(stopTrackingButton);
 
   return {
     plus,
@@ -120,5 +142,7 @@ export function renderCounter(props: Props = {}) {
     startBatch,
     endBatch,
     queries,
+    startTracking,
+    stopTracking,
   };
 }
